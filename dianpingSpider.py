@@ -4,11 +4,11 @@
 import random
 import codecs
 import re
+from bs4 import BeautifulSoup
 from urllib import error
 import urllib.request
 import time
 import randomProxy
-import time
 
 user_agent_list = [
         'Mozilla/40.0.3 (Macintosh; Intel Mac OS X 10_10_4)',\
