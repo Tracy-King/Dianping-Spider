@@ -4,15 +4,15 @@ from email.utils import formataddr
 
 def SendEmail(message, flag):
     msg = MIMEText(message, 'plain', 'utf-8')
-    msg['From'] = formataddr(['163mail','account'])
-    msg['To'] = formataddr(['qqmail','account'])
+    msg['From'] = formataddr(['Sender Name','account'])
+    msg['To'] = formataddr(['Receiver Name','account'])
     if flag == 'Alert':
-        msg['Subject'] = 'DianpingSpiderAlert'
+        msg['Subject'] = 'Content'
     else:
-        msg['Subject'] = 'DianpingSpiderFinished' 
+        msg['Subject'] = 'Content' 
 
     try:
-        server = smtplib.SMTP('smtp.163.com', 25)
+        server = smtplib.SMTP('SMTP server of the sender', 25)
         server.login('account', "passwd")
         server.sendmail('title',['addr'], msg.as_string())
         print('Success')
