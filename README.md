@@ -5,7 +5,7 @@ Preparation for installing:
 - re
 - lxml
 
-You can use *pip install* to install the required components after successfully installed python3.5
+You can use *pip install* to install the required components after successfully installing python3.5
 
 Email modules is prepared for your need
 
