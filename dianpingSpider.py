@@ -9,6 +9,9 @@ from urllib import error
 import urllib.request
 import time
 import randomProxy
+import emailAlert
+import time
+import winsound
 
 user_agent_list = [
         'Mozilla/40.0.3 (Macintosh; Intel Mac OS X 10_10_4)',\
@@ -84,6 +87,7 @@ def visit(url):
         request = urllib.request.Request(url, headers = headers)
         response = urllib.request.urlopen(request)
     except:
+        winsound.Beep(400,1000)
         print('Request Error at:' + url)
         return None
     data = response.read()
@@ -194,13 +198,9 @@ def travelReviews(Userid):
     #print("PageNum: ", pageNum)
     soup = visit(url)
     if(validation(soup)):
-        return
-    nextPage = soup.find('a', class_ = 'page-next')
-    if soup is None:
-        freview.write('}')
         freview.close()
         return
-    
+    nextPage = soup.find('a', class_ = 'page-next') 
     review(soup, freview)
     
 
@@ -214,21 +214,19 @@ def travelReviews(Userid):
         freview = codecs.open(filename,'a',encoding = "utf-8")
         link = url + str(nextPage['href'])
         soup = visit(link)
+        if(validation(soup)):
+            freview.close()
+            return
         review(soup, freview)
         nextPage = soup.find('a', class_ = 'page-next')
 
-    freview.write('}')
     freview.close()
 
 def travelHomepage(Userid):
     url = 'https://www.dianping.com/member/' + str(Userid)
     print(Userid)
     filename = 'Data/UserList.txt'
-    try:
-        soup = visit(url)
-    except:
-        print('Homepage at uid:' + str(Userid))
-
+    soup = visit(url)
     if(validation(soup)):
         return
     
@@ -325,10 +323,14 @@ def travelHomepage(Userid):
     fpage.close()
     
 def validation(soup):
+    if soup is None:
+        winsound.Beep(400,1000)
+        return 1
     error = soup.find('div', class_ = "aboutBox errorMessage")
     if error is not None:
         if error.h2.string == "会员不存在！！":
             print("Member invalid")
+            winsound.Beep(400,1000)
             return 1
     return 0
     
@@ -354,7 +356,7 @@ def initUserList(start, end):
 if (__name__=='__main__'):
     
     init()
-    useridList = initUserList(2000,5000)
+    useridList = initUserList(100000,150000)
     for i in useridList:
         startTime = time.time()
         getUserInfo(str(i))
