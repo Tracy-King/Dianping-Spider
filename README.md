@@ -5,4 +5,5 @@ Preparation for installing:
 - re
 
 You can use *pip install* to install the required components after successfully installed python3.5
+
 Email modules is prepared for your need
