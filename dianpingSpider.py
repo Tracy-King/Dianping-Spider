@@ -356,7 +356,7 @@ def initUserList(start, end):
 if (__name__=='__main__'):
     
     init()
-    useridList = initUserList(100000,150000)
+    useridList = initUserList(109552,115000)
     for i in useridList:
         startTime = time.time()
         getUserInfo(str(i))
