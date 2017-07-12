@@ -12,6 +12,8 @@ import time
 import winsound
 import ssl
 
+global flag, verbose
+
 # Please set the variables below before running
 # -------------------------------------------------
 
@@ -35,7 +37,7 @@ threshold = 50
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-global flag, verbose
+
 
 user_agent_list = [
         'Mozilla/40.0.3 (Macintosh; Intel Mac OS X 10_10_4)',\
