@@ -1,6 +1,4 @@
 # coding=utf-8 
-
-
 import random
 import codecs
 import re
@@ -12,6 +10,32 @@ import randomProxy
 import emailAlert
 import time
 import winsound
+import ssl
+
+# Please set the variables below before running
+# -------------------------------------------------
+
+startUid = 90000
+# The program starts from startUid
+
+endUid = 92000
+# The program ends at endUid
+
+verbose = True
+# If verbose == True, the program will records the personal
+# info of users, even if their reviews number is under the
+# threshold. Visa verse
+
+threshold = 50
+# The program only records the users whose reviews number
+# is larger than threshold
+
+# --------------------------------------------------
+
+
+ssl._create_default_https_context = ssl._create_unverified_context
+
+global flag, verbose
 
 user_agent_list = [
         'Mozilla/40.0.3 (Macintosh; Intel Mac OS X 10_10_4)',\
@@ -52,29 +76,24 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3', 
     }
 
-url = 'https://www.dianping.com/member/109276339/reviews'
 
-#109276339
-#2124372
-#13672722
-userid = 0
+# Assistant Functions
 
-pageNum = 0
-
-
-
-def getNumber(href):
+def getNumber(href):        # Get the numbers in a string, output the number by str type
     number = ''
     for i in range(len(href)):
         if '0' <= href[i] <= '9':
             number = number + href[i]
     return number
 
+def Num2Int(string):        # Transfer the str-type number to int-type number
+    num = 0
+    for i in range(len(string)):
+        if '0' <= string[i] <= '9':
+            num = num*10 + (int(string[i]) - int('0'))
+    return num
 
-#review = soup.find_all('div', id = re.compile('rev-dpReviewsMostHelpfulAUI'))
-
-def init():
-    
+def init():                 # Initialize the opener and proxy
     proxy = randomProxy.getRandomProxy('proxy_list.txt')
     print(proxy)
     proxy_handler = urllib.request.ProxyHandler({'http':proxy})
@@ -82,7 +101,7 @@ def init():
     urllib.request.install_opener(opener)
     
     
-def visit(url):
+def visit(url):             # Visit the url
     try:
         request = urllib.request.Request(url, headers = headers)
         response = urllib.request.urlopen(request)
@@ -95,7 +114,7 @@ def visit(url):
     soup = BeautifulSoup(data, 'lxml')
     return soup
 
-def list2str(l):
+def list2str(l):            # Transfer a list to string
     s = '['
     for i in l:
         for j in range(len(i)):
@@ -106,10 +125,10 @@ def list2str(l):
     s = s + ']'
     return s
 
-def iconClassify(href):
+def iconClassify(href):     # Identify the icon, 0 for default, 1 for customized
     return str(href[9])
 
-def getMoreInfo(more):
+def getMoreInfo(more):      # Get info about loveStatus, birthday, constellation
     loveStatus = ' '
     birthday = ' '
     constellation = ' '
@@ -129,8 +148,21 @@ def getMoreInfo(more):
                 constellation = str(s)
     return loveStatus, birthday, constellation
 
-def review(soup, freview):
-    
+def validation(soup):       # Whether the uid exists
+    if soup is None:
+        winsound.Beep(400,1000)
+        return 1
+    error = soup.find('div', class_ = "aboutBox errorMessage")
+    if error is not None:
+        if error.h2.string == "会员不存在！！":
+            print("Member invalid")
+            winsound.Beep(400,1000)
+            return 1
+    return 0
+
+#Significant Functions
+
+def review(soup, freview):  # Travel the reviews in a webpage
     review = soup.find_all('div', class_ = 'txt J_rptlist')
     #print("Review:", len(review))
     for i in review:
@@ -188,9 +220,8 @@ def review(soup, freview):
             + ',\tDishes: ' + list2str(favDishes)
             + ',\tTime: ' + reviewTime
             +'},\n')
-    time.sleep(0.1)
 
-def travelReviews(Userid):
+def travelReviews(Userid):  # Travel the reviews of a user
     filename = 'Data/User/' + str(Userid) + '.txt'
     url = 'https://www.dianping.com/member/' + str(Userid) + '/reviews'
     freview = codecs.open(filename,'w',encoding = "utf-8")
@@ -202,8 +233,6 @@ def travelReviews(Userid):
         return
     nextPage = soup.find('a', class_ = 'page-next') 
     review(soup, freview)
-    
-
     
     while nextPage is not None:
         pageNum = pageNum + 1
@@ -222,17 +251,30 @@ def travelReviews(Userid):
 
     freview.close()
 
-def travelHomepage(Userid):
+def travelHomepage(Userid): # Travel the personal info of a user
+    global flag, verbose
+    flag = True
     url = 'https://www.dianping.com/member/' + str(Userid)
-    print(Userid)
     filename = 'Data/UserList.txt'
     soup = visit(url)
     if(validation(soup)):
         return
-    
-       
-    fpage = codecs.open(filename,'a',encoding = "utf-8")
 
+    ReviewNum = soup.find('a', href = '/member/' + str(Userid) + '/reviews')
+    if ReviewNum is not None:
+        ReviewNum = getNumber(ReviewNum.string)
+    else:
+        ReviewNum = '0'
+
+    if Num2Int(ReviewNum) < threshold:
+        flag = False
+        print(Userid + '......False')
+        if verbose == False:
+            return
+
+    fpage = codecs.open(filename,'a',encoding = "utf-8")
+    if flag == True:
+        print(Userid + '......True')
     userName = str(soup.find('h2', class_ = 'name').string)
 
     iconPic = soup.find('div', class_ = 'pic').a.img['src']
@@ -244,11 +286,6 @@ def travelHomepage(Userid):
     else:
         place = ''
 
-    ReviewNum = soup.find('a', href = '/member/' + str(Userid) + '/reviews')
-    if ReviewNum is not None:
-        ReviewNum = getNumber(ReviewNum.string)
-    else:
-        ReviewNum = '0'
 
     WishlistNum = soup.find('a', href = '/member/' + str(Userid) + '/wishlists')
     if WishlistNum is not None:
@@ -321,23 +358,14 @@ def travelHomepage(Userid):
             +'},\n')
 
     fpage.close()
-    
-def validation(soup):
-    if soup is None:
-        winsound.Beep(400,1000)
-        return 1
-    error = soup.find('div', class_ = "aboutBox errorMessage")
-    if error is not None:
-        if error.h2.string == "会员不存在！！":
-            print("Member invalid")
-            winsound.Beep(400,1000)
-            return 1
-    return 0
-    
+
+# Main functions    
     
 def getUserInfo(Userid):
+    global flag
     travelHomepage(Userid)
-    travelReviews(Userid)
+    if flag == True: 
+        travelReviews(Userid)
     
     
 def initUserList(start, end):
@@ -346,59 +374,16 @@ def initUserList(start, end):
         useridList.append(i)
     return useridList
     
-
-'''star = i.find('span', class_ = re.compile('a-icon-alt')).string
-    name = i.find('a', class_='noTextDecoration', href=re.compile('profile'))
-    comment = i.find('div', class_ = 'a-section')
-    vote = i.find('span', class_= 'a-size-base a-color-secondary cr-vote-buttons')
-    '''
-
 if (__name__=='__main__'):
-    
+    global flag
     init()
-    useridList = initUserList(109552,115000)
+    print('Start:', startUid)
+    print('End:', endUid)
+    print('Threshold:', threshold)
+    useridList = initUserList(startUid,endUid)
     for i in useridList:
         startTime = time.time()
         getUserInfo(str(i))
         endTime = time.time()
-        print('Time expired:' + str(endTime - startTime))
-
-
-'''
-while(1):
-    soup = visit(url)
-    review = soup.find_all('div',class_='a-section review')
-    print("Review:", len(review))
-    f.write(soup.prettify())
-    f.close()
-    print("PageNum:", pageNum)
-    
-    for i in review:
-        star = i.find('a', class_ = 'a-link-normal')['title']
-        time = i.find('span', class_ = re.compile('review-date')).string
-        name = i.find('a', class_ = re.compile('author'), href=re.compile('profile')).string
-        comment = i.find('span', class_ = re.compile('review-text')).string
-        vote = i.find('span', class_= 'review-votes')
-        freview.write('{' +str(star)
-              + '\t{' + str(time)
-              + '\t{' + str(name)
-              + '\t{' + str(comment))
-        #print(type(vote))
-        if(vote is not None):  
-              freview.write('{' + str(vote.string) + '}')
-        #print(type(vote))
-        freview.write('}}}},\n')
-        
-
-    nextPage = soup.find('li', class_='a-last')
-    if(nextPage is None):
-        break
-
-    nextText = str(nextPage.a['href'])
-
-    url =  str('https://www.amazon.cn' + nextText[9:])
-    print(url)
-    t.sleep(10)
-    #break
-'''
-
+        if flag == True:
+            print('Time expired:' + str(endTime - startTime))

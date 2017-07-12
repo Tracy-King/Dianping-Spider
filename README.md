@@ -1,4 +1,19 @@
 # A Dianping.com Spider based on users
+
+update v2.0 on 7.12
+New features:
+- Set a threshold to filter those whose reviews number is less than the threshold
+- Set a *verbose* flag for users to choose whether to records the personal info of those whose reviews number is under the threshold. *verbose == True* for yes and *verbose == False* for no.
+- You can set the variable *startUid*, *endUid*, *threshold* at the beginning of the program, making it more convenient to user
+- Get rid of the SSL certification of https website, only for users whose OS is too old or didn't install MS update for a long time
+- Optimize the program structure, output info. Annotation has been added to every functions so that it's easy for you to understand
+- *Data* folders and *Data/User* folders have been prepared for users to eliminate the error at first running
+
+The only thing you need to do before running the program is to set four varibles: *startUid*, *endUid*, *verbose* and *threshold* at the beginning of the program.
+
+
+
+------------------------------------------
 Preparation for installing:
 - python3.5
 - beautifulsoup4
@@ -8,6 +23,8 @@ Preparation for installing:
 You can use *pip install* to install the required components after successfully installing python3.5
 
 Email modules is prepared for your need
+
+The program is able to save the data in time. So if there is any problem causing a idle, please feel free to kill the program and restart from where the idle happened
 
 Users' personal information collected in default is:
 - User Name
