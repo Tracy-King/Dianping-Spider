@@ -1,6 +1,7 @@
 # A Dianping.com Spider based on users
 
 update v2.0 on 7.12
+
 New features:
 - Set a threshold to filter those whose reviews number is less than the threshold
 - Set a *verbose* flag for users to choose whether to records the personal info of those whose reviews number is under the threshold. *verbose == True* for yes and *verbose == False* for no.
